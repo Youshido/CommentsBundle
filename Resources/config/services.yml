@@ -1,0 +1,9 @@
+services:
+  comments_manager:
+    class: Youshido\CommentsBundle\Service\CommentsManager
+    arguments:
+      - "@comments.om"
+      - "@security.token_storage"
+    calls:
+      - ["setAllowAnonymous", ["%comments.config.allow_anonymous%"]]
+      - ["initiateCurrentUser"]

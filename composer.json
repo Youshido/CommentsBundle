@@ -1,0 +1,27 @@
+{
+  "name": "youshido/comments-bundle",
+  "description": "Symfony Comments Bundle with MongoDB & GraphQL Support",
+  "minimum-stability": "stable",
+  "license": "mit",
+  "authors": [
+    {
+      "name": "Alexandr Viniychuk",
+      "email": "a@viniychuk.com"
+    }
+
+  ],
+  "autoload": {
+    "psr-4": {
+      "Youshido\\CommentsBundle\\": ""
+    }
+  },
+  "require": {
+    "php": ">=5.6",
+    "youshido/graphql-bundle": "~1.2 || 2.0.x-dev"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "~4.7",
+    "symfony/symfony": "~3",
+    "composer/composer": "~1.2"
+  }
+}
