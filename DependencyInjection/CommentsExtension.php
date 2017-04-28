@@ -19,6 +19,7 @@ class CommentsExtension extends Extension
         $this->setContainerParam($container, 'platform', $config['platform']);
         $this->setContainerParam($container, 'host', null);
         $this->setContainerParam($container, 'scheme', null);
+        $this->setContainerParam($container, 'model', $config['model']);
         $this->setContainerParam($container, 'allow_anonymous', $config['allow_anonymous']);
         $this->setContainerParam($container, 'max_depth', $config['max_depth']);
 

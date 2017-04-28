@@ -7,3 +7,17 @@ services:
     calls:
       - ["setAllowAnonymous", ["%comments.config.allow_anonymous%"]]
       - ["initiateCurrentUser"]
+
+  comments_helper:
+    class: Youshido\CommentsBundle\Service\CommentsHelper
+    parent: "base_helper"
+    arguments:
+      - "@comments_manager"
+      - "%comments.config.model%"
+
+  voter.comment:
+    class: Youshido\CommentsBundle\Security\Voter\CommentVoter
+    public: false
+    arguments: ['@security.access.decision_manager']
+    tags:
+      - { name: security.voter }

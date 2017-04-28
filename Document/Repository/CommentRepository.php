@@ -2,14 +2,14 @@
 
 namespace Youshido\CommentsBundle\Document\Repository;
 
-use AppBundle\GraphQL\Type\Comment\CommentSortModeEnumType;
+use Youshido\CommentsBundle\GraphQL\Type\CommentSortModeEnumType;
 use Youshido\GraphQLExtensionsBundle\Document\Repository\CursorAwareRepository;
 
 class CommentRepository extends CursorAwareRepository
 {
     public function getCursoredList($args, $filters = [])
     {
-        $filters['showdownId'] = $args['showdownId'];
+        $filters['modelId'] = $args['modelId'];
         if (!empty($args['sortMode'])) {
             switch ($args['sortMode']) {
                 case CommentSortModeEnumType::COMMENT_SORT_TYPE_BEST:
@@ -35,8 +35,8 @@ class CommentRepository extends CursorAwareRepository
     {
         $qb = $this->createQueryBuilder();
 
-        if (!empty($filters['showdownId'])) {
-            $qb->addAnd(['modelId' => new \MongoId($filters['showdownId'])]);
+        if (!empty($filters['modelId'])) {
+            $qb->addAnd(['modelId' => new \MongoId($filters['modelId'])]);
         }
 
         $qb->sort('slug', 'ASC');

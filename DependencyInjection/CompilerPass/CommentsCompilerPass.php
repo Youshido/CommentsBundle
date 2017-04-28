@@ -11,8 +11,6 @@ class CommentsCompilerPass implements CompilerPassInterface
 {
     public function process(ContainerBuilder $container)
     {
-        $storageDefinition  = new Definition();
-        $models = [];
         $platform     = $container->getParameter('comments.config.platform');
         switch ($platform) {
             case 'orm':
@@ -25,7 +23,6 @@ class CommentsCompilerPass implements CompilerPassInterface
                 $models['file'] = 'Youshido\GraphQLExtensionsBundle\Document\File';
                 break;
         }
-        $container->setParameter('comments.models', $models);
     }
 
 
