@@ -10,7 +10,7 @@ services:
 
   comments_helper:
     class: Youshido\CommentsBundle\Service\CommentsHelper
-    parent: "base_helper"
+    parent: "graphql_extensions.base_helper"
     arguments:
       - "@comments_manager"
       - "%comments.config.model%"
