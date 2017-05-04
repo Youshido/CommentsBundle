@@ -9,5 +9,5 @@ Provides Comments
 ```yaml
 comments:
   platform: "odm"
-  model: "AppBundle\\Document\\Video"
+  model: "AppBundle\Document\Video"
 ```

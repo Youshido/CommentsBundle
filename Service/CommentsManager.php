@@ -98,15 +98,6 @@ class CommentsManager
 
     /**
      * @param CommentInterface $comment
-     * @return bool
-     */
-    public function upvote($comment)
-    {
-        return $this->addVote($comment, 1);
-    }
-
-    /**
-     * @param CommentInterface $comment
      * @param                  $value
      * @return bool
      */
@@ -142,6 +133,27 @@ class CommentsManager
         ]);
 
         return !empty($vote);
+    }
+
+    public function removeVote(CommentInterface $comment)
+    {
+        $user = $this->getCurrentUser();
+        /** @var DocumentManager $om */
+        $om   = $this->om;
+        $om->getDocumentCollection(Comment::class)->update(
+            ['_id' => $comment->getId(),],
+            ['$pull' => ['votes.userId' => new \MongoId($user->getId())],
+            ]);
+        return $comment;
+    }
+
+    /**
+     * @param CommentInterface $comment
+     * @return bool
+     */
+    public function upvote($comment)
+    {
+        return $this->addVote($comment, 1);
     }
 
     /**
@@ -201,7 +213,7 @@ class CommentsManager
     /**
      * @return bool
      */
-    public function isAllowAnonymous(): bool
+    public function isAllowAnonymous()
     {
         return $this->allowAnonymous;
     }
@@ -209,7 +221,7 @@ class CommentsManager
     /**
      * @param bool $allowAnonymous
      */
-    public function setAllowAnonymous(bool $allowAnonymous)
+    public function setAllowAnonymous($allowAnonymous)
     {
         $this->allowAnonymous = $allowAnonymous;
     }

@@ -58,11 +58,8 @@ class CommentsHelper extends BaseHelper
 
     public function voteForComment($commentId, $value)
     {
-        $comment = $this->getOm()->getRepository(Comment::class)->find($commentId);
-
-        if (is_null($comment)) {
-            throw $this->createNotFoundException('Comment not Found');
-        }
+        /** @var CommentInterface $comment */
+        $comment = $this->getObject(Comment::class, $commentId);
 
         if ($value > 0) {
             $this->commentsManager->upvote($comment);
@@ -70,6 +67,14 @@ class CommentsHelper extends BaseHelper
             $this->commentsManager->downvote($comment);
         }
 
+        return $comment;
+    }
+
+    public function removeVoteForComment($commentId)
+    {
+        /** @var CommentInterface $comment */
+        $comment = $this->getObject(Comment::class, $commentId);
+        $this->commentsManager->removeVote($comment);
         return $comment;
     }
 
@@ -93,5 +98,12 @@ class CommentsHelper extends BaseHelper
 
         return $comment->getSlug();
     }
+
+    /**  */
+    protected function getObject($class, $id, $attribute = null)
+    {
+        return parent::getObject($class, $id, $attribute);
+    }
+
 
 }
