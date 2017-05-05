@@ -11,6 +11,7 @@ namespace Youshido\CommentsBundle\Service;
 
 use Doctrine\Common\Persistence\ObjectManager;
 use Doctrine\ODM\MongoDB\DocumentManager;
+use Symfony\Component\PropertyAccess\PropertyAccessor;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage;
 use Youshido\CommentsBundle\Document\Comment;
 use Youshido\CommentsBundle\Document\CommentableInterface;
@@ -128,7 +129,7 @@ class CommentsManager
         /** @var DocumentManager $om */
         $om   = $this->om;
         $vote = $om->getRepository(Comment::class)->findOneBy([
-            '_id'          => $comment->getId(),
+            '_id'          => new \MongoId($comment->getId()),
             'votes.userId' => new \MongoId($user->getId()),
         ]);
 
@@ -137,13 +138,34 @@ class CommentsManager
 
     public function removeVote(CommentInterface $comment)
     {
-        $user = $this->getCurrentUser();
-        /** @var DocumentManager $om */
-        $om   = $this->om;
-        $om->getDocumentCollection(Comment::class)->update(
-            ['_id' => $comment->getId(),],
-            ['$pull' => ['votes.userId' => new \MongoId($user->getId())],
-            ]);
+        $user      = $this->getCurrentUser();
+        $commentId = new \MongoId($comment->getId());
+
+        $vote = $this->getOm()->getDocumentCollection(Comment::class)->findOne([
+            '_id'          => $commentId,
+            'votes.userId' => new \MongoId($user->getId()),
+        ], ['votes.$']);
+        if ($vote) {
+            $result = $this->om->getDocumentCollection(Comment::class)->update(
+                ['_id' => $commentId,],
+                ['$pull' => ['votes' => ['userId' => new \MongoId($user->getId())]],
+                ]);
+            if ($result['nModified']) {
+                if (($vote['votes'][0]['value'] > 0)) {
+                    $field = 'upvotesCount';
+                    $comment->setUpvotesCount($comment->getUpvotesCount() - 1);
+                } else {
+                    $field = 'downvotesCount';
+                    $comment->setDownvotesCount($comment->getDownvotesCount() - 1);
+                }
+                $this->getOm()->getDocumentCollection(Comment::class)->update(
+                    ['_id' => $commentId,],
+                    ['$inc' => [$field => -1]]
+                );
+            }
+        }
+
+
         return $comment;
     }
 
@@ -224,6 +246,14 @@ class CommentsManager
     public function setAllowAnonymous($allowAnonymous)
     {
         $this->allowAnonymous = $allowAnonymous;
+    }
+
+    /**
+     * @return DocumentManager
+     */
+    public function getOm()
+    {
+        return $this->om;
     }
 
 

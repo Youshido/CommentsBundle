@@ -9,7 +9,7 @@ use Youshido\GraphQL\Field\AbstractField;
 use Youshido\GraphQL\Type\NonNullType;
 use Youshido\GraphQL\Type\Scalar\IdType;
 
-class RemoveVoteCommentField extends AbstractField
+class RemoveCommentVoteField extends AbstractField
 {
 
     public function getType()
