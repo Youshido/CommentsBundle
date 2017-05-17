@@ -6,6 +6,7 @@ services:
       - "@security.token_storage"
     calls:
       - ["setAllowAnonymous", ["%comments.config.allow_anonymous%"]]
+      - ["setMaxDepth", ["%comments.config.max_depth%"]]
       - ["initiateCurrentUser"]
 
   comments_helper:

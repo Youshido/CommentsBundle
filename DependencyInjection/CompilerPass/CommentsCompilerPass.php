@@ -7,11 +7,19 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
 
+/**
+ * Class CommentsCompilerPass
+ *
+ * @package Youshido\CommentsBundle\DependencyInjection\CompilerPass
+ */
 class CommentsCompilerPass implements CompilerPassInterface
 {
+    /**
+     * @param ContainerBuilder $container
+     */
     public function process(ContainerBuilder $container)
     {
-        $platform     = $container->getParameter('comments.config.platform');
+        $platform = $container->getParameter('comments.config.platform');
         switch ($platform) {
             case 'orm':
                 $container->setAlias('comments.om', 'doctrine.orm.entity_manager');
@@ -24,6 +32,4 @@ class CommentsCompilerPass implements CompilerPassInterface
                 break;
         }
     }
-
-
 }

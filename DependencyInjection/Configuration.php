@@ -12,6 +12,9 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
  */
 class Configuration implements ConfigurationInterface
 {
+    /**
+     * @return TreeBuilder
+     */
     public function getConfigTreeBuilder()
     {
         $treeBuilder = new TreeBuilder();
@@ -33,13 +36,12 @@ class Configuration implements ConfigurationInterface
                     ->cannotBeEmpty()
                 ->end()
                 ->scalarNode('max_depth')
-                    ->defaultValue(1)
-                    ->cannotBeEmpty()
                 ->end()
                 ->booleanNode('allow_anonymous')
                     ->defaultValue(false)
                 ->end()
             ->end();
+
         return $treeBuilder;
     }
 
