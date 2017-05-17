@@ -8,10 +8,8 @@
 
 namespace Youshido\CommentsBundle\Service;
 
-
 use Doctrine\Common\Persistence\ObjectManager;
 use Doctrine\ODM\MongoDB\DocumentManager;
-use Symfony\Component\PropertyAccess\PropertyAccessor;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage;
 use Youshido\CommentsBundle\Document\Comment;
 use Youshido\CommentsBundle\Document\CommentableInterface;
@@ -19,9 +17,13 @@ use Youshido\CommentsBundle\Document\CommentInterface;
 use Youshido\CommentsBundle\Document\CommentVote;
 use Youshido\CommentsBundle\Document\UserReference;
 
+/**
+ * Class CommentsManager
+ *
+ * @package Youshido\CommentsBundle\Service
+ */
 class CommentsManager
 {
-
     /** @var ObjectManager */
     private $om;
 
@@ -34,8 +36,12 @@ class CommentsManager
     /** @var bool */
     private $allowAnonymous = false;
 
+    /** @var int */
+    private $maxDepth = null;
+
     /**
      * CommentsManager constructor.
+     *
      * @param ObjectManager $om
      * @param TokenStorage  $tokenStorage
      */
@@ -45,11 +51,11 @@ class CommentsManager
         $this->tokenStorage = $tokenStorage;
     }
 
-
     /**
      * @param CommentableInterface $object
      * @param string               $content
-     * @param                      $parentId
+     * @param string               $parentId
+     *
      * @return CommentInterface
      */
     public function createComment($object, $content, $parentId = null)
@@ -58,10 +64,19 @@ class CommentsManager
         $comment->setModelId(new \MongoId($object->getId()));
         $parentSlug = '';
         if (!empty($parentId)) {
-            $comment->setParentId($parentId);
-            $parent     = $this->om->getRepository(Comment::class)->find($parentId);
-            $parentSlug = $parent->getSlug() . '-';
-            $comment->setLevel($parent->getLevel() + 1);
+            $parent = $this->om->getRepository(Comment::class)->find($parentId);
+            if (!is_null($this->maxDepth) && $parent->getLevel() + 1 > $this->maxDepth) {
+                $comment->setLevel($this->maxDepth);
+                if ($parent->getParentId()) {
+                    $parent = $this->om->getRepository(Comment::class)->find($parent->getParentId());
+                }
+            } else {
+                $comment->setLevel($parent->getLevel() + 1);
+            }
+            if ($parent) {
+                $comment->setParentId($parentId);
+                $parentSlug = $parent->getSlug() . '-';
+            }
         }
         $comment->setCreatedAt(new \DateTime());
         $comment->setSlug($parentSlug . (new \DateTime())->format("Y.m.d.H.i.s-") . uniqid());
@@ -73,13 +88,10 @@ class CommentsManager
         return $comment;
     }
 
-    protected function processAuth(CommentInterface $comment)
-    {
-        $user          = $this->getCurrentUser();
-        $userReference = new UserReference($user);
-        $comment->setUserReference($userReference);
-    }
-
+    /**
+     * @return mixed
+     * @throws \Exception
+     */
     public function getCurrentUser()
     {
         if (!$this->allowAnonymous && !$this->currentUser) {
@@ -99,7 +111,8 @@ class CommentsManager
 
     /**
      * @param CommentInterface $comment
-     * @param                  $value
+     * @param int              $value
+     *
      * @return bool
      */
     public function addVote($comment, $value = 1)
@@ -122,9 +135,16 @@ class CommentsManager
         return $comment->getUpvotesCount() + $comment->getDownvotesCount();
     }
 
+    /**
+     * @param CommentInterface $comment
+     *
+     * @return bool|null
+     */
     public function userHasVoted(CommentInterface $comment)
     {
-        if (!$this->currentUser) return null;
+        if (!$this->currentUser) {
+            return null;
+        }
         $user = $this->getCurrentUser();
         /** @var DocumentManager $om */
         $om   = $this->om;
@@ -146,10 +166,14 @@ class CommentsManager
             'votes.userId' => new \MongoId($user->getId()),
         ], ['votes.$']);
         if ($vote) {
-            $result = $this->om->getDocumentCollection(Comment::class)->update(
-                ['_id' => $commentId,],
-                ['$pull' => ['votes' => ['userId' => new \MongoId($user->getId())]],
-                ]);
+            $result = $this->getOm()->getDocumentCollection(Comment::class)->update(
+                [
+                    '_id' => $commentId,
+                ],
+                [
+                    '$pull' => ['votes' => ['userId' => new \MongoId($user->getId())]],
+                ]
+            );
             if ($result['nModified']) {
                 if (($vote['votes'][0]['value'] > 0)) {
                     $field = 'upvotesCount';
@@ -171,6 +195,7 @@ class CommentsManager
 
     /**
      * @param CommentInterface $comment
+     *
      * @return bool
      */
     public function upvote($comment)
@@ -200,6 +225,9 @@ class CommentsManager
             ->getQuery()->execute();
     }
 
+    /**
+     * Initiate current user value
+     */
     public function initiateCurrentUser()
     {
         if ($token = $this->tokenStorage->getToken()) {
@@ -210,6 +238,8 @@ class CommentsManager
     }
 
     /**
+     * @param array $args
+     *
      * @return CommentInterface[]
      */
     public function getCursoredComments($args)
@@ -219,6 +249,7 @@ class CommentsManager
 
     /**
      * @param CommentableInterface $object
+     *
      * @return CommentInterface[]
      */
     public function getComments(CommentableInterface $object)
@@ -256,5 +287,26 @@ class CommentsManager
         return $this->om;
     }
 
+    /**
+     * @return int
+     */
+    public function getMaxDepth()
+    {
+        return $this->maxDepth;
+    }
 
+    /**
+     * @param int $maxDepth
+     */
+    public function setMaxDepth($maxDepth)
+    {
+        $this->maxDepth = $maxDepth;
+    }
+
+    protected function processAuth(CommentInterface $comment)
+    {
+        $user          = $this->getCurrentUser();
+        $userReference = new UserReference($user);
+        $comment->setUserReference($userReference);
+    }
 }
