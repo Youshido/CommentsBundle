@@ -76,7 +76,7 @@ class CommentsHelper extends BaseHelper
             }
         }
 
-        return $this->commentsManager->createComment($object, $args['content'], $args['parentId'] ?? null);
+        return $this->commentsManager->createComment($object, $args['content'], !empty($args['parentId']) ? $args['parentId'] : null);
     }
 
     /**
