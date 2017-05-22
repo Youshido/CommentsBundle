@@ -1,10 +1,4 @@
 <?php
-/**
- * This file is a part of Youshido CommentsBundle.
- *
- * @author Alexandr Viniychuk <a@viniychuk.com>
- * created: 3/16/17 9:55 AM
- */
 
 namespace Youshido\CommentsBundle\Document;
 
@@ -12,7 +6,7 @@ use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
 
 /**
  * Class CommentVote
- * @package Youshido\CommentsBundle\Document
+ *
  * @ODM\EmbeddedDocument()
  */
 class CommentVote
@@ -54,5 +48,4 @@ class CommentVote
     {
         $this->value = $value;
     }
-
 }

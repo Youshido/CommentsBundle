@@ -7,7 +7,7 @@ use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
 
 /**
  * Class Comment
- * @package Youshido\CommentsBundle\Document
+ *
  * @ODM\Document(collection="comments", repositoryClass="Youshido\CommentsBundle\Document\Repository\CommentRepository")
  */
 class Comment implements CommentInterface
@@ -48,10 +48,15 @@ class Comment implements CommentInterface
     /** @ODM\Field() */
     private $slug;
 
+    /**
+     * Comment constructor.
+     *
+     * @param string $content
+     */
     public function __construct($content)
     {
         $this->content = $content;
-        $this->votes = new ArrayCollection();
+        $this->votes   = new ArrayCollection();
     }
 
     /**
@@ -64,11 +69,13 @@ class Comment implements CommentInterface
 
     /**
      * @param mixed $id
+     *
      * @return Comment
      */
     public function setId($id)
     {
         $this->id = $id;
+
         return $this;
     }
 
@@ -82,11 +89,13 @@ class Comment implements CommentInterface
 
     /**
      * @param mixed $content
+     *
      * @return Comment
      */
     public function setContent($content)
     {
         $this->content = $content;
+
         return $this;
     }
 
@@ -100,11 +109,13 @@ class Comment implements CommentInterface
 
     /**
      * @param mixed $parentId
+     *
      * @return Comment
      */
     public function setParentId($parentId)
     {
         $this->parentId = $parentId;
+
         return $this;
     }
 
@@ -118,11 +129,13 @@ class Comment implements CommentInterface
 
     /**
      * @param mixed $createdAt
+     *
      * @return Comment
      */
     public function setCreatedAt($createdAt)
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
@@ -136,11 +149,13 @@ class Comment implements CommentInterface
 
     /**
      * @param mixed $status
+     *
      * @return Comment
      */
     public function setStatus($status)
     {
         $this->status = $status;
+
         return $this;
     }
 
@@ -154,14 +169,15 @@ class Comment implements CommentInterface
 
     /**
      * @param mixed $votes
+     *
      * @return Comment
      */
     public function setVotes($votes)
     {
         $this->votes = $votes;
+
         return $this;
     }
-
 
     /**
      * Add vote
@@ -193,11 +209,13 @@ class Comment implements CommentInterface
 
     /**
      * @param mixed $upvotesCount
+     *
      * @return Comment
      */
     public function setUpvotesCount($upvotesCount)
     {
         $this->upvotesCount = $upvotesCount;
+
         return $this;
     }
 
@@ -211,11 +229,13 @@ class Comment implements CommentInterface
 
     /**
      * @param mixed $downvotesCount
+     *
      * @return Comment
      */
     public function setDownvotesCount($downvotesCount)
     {
         $this->downvotesCount = $downvotesCount;
+
         return $this;
     }
 
@@ -261,11 +281,13 @@ class Comment implements CommentInterface
 
     /**
      * @param mixed $userReference
+     *
      * @return Comment
      */
     public function setUserReference($userReference)
     {
         $this->userReference = $userReference;
+
         return $this;
     }
 
@@ -279,18 +301,21 @@ class Comment implements CommentInterface
 
     /**
      * @param mixed $modelId
+     *
      * @return Comment
      */
     public function setModelId($modelId)
     {
         $this->modelId = $modelId;
+
         return $this;
     }
 
-
+    /**
+     * @return UserReference
+     */
     public function getAuthor()
     {
         return $this->userReference;
     }
-
 }

@@ -1,18 +1,9 @@
 <?php
-/**
- * This file is a part of Youshido CommentsBundle.
- *
- * @author Alexandr Viniychuk <a@viniychuk.com>
- * created: 3/15/17 8:24 PM
- */
 
 namespace Youshido\CommentsBundle\Document;
 
-
 /**
  * Class Comment
- * @package Youshido\CommentsBundle\Document
- * @ODM\Document(collection="comments")
  */
 interface CommentInterface
 {
@@ -23,6 +14,7 @@ interface CommentInterface
 
     /**
      * @param mixed $id
+     *
      * @return Comment
      */
     public function setId($id);
@@ -34,6 +26,7 @@ interface CommentInterface
 
     /**
      * @param mixed $content
+     *
      * @return Comment
      */
     public function setContent($content);
@@ -45,6 +38,7 @@ interface CommentInterface
 
     /**
      * @param mixed $parentId
+     *
      * @return Comment
      */
     public function setParentId($parentId);
@@ -56,6 +50,7 @@ interface CommentInterface
 
     /**
      * @param mixed $createdAt
+     *
      * @return Comment
      */
     public function setCreatedAt($createdAt);
@@ -67,6 +62,7 @@ interface CommentInterface
 
     /**
      * @param mixed $status
+     *
      * @return Comment
      */
     public function setStatus($status);
@@ -78,6 +74,7 @@ interface CommentInterface
 
     /**
      * @param mixed $votes
+     *
      * @return Comment
      */
     public function setVotes($votes);
@@ -89,6 +86,7 @@ interface CommentInterface
 
     /**
      * @param mixed $upvotesCount
+     *
      * @return Comment
      */
     public function setUpvotesCount($upvotesCount);
@@ -100,6 +98,7 @@ interface CommentInterface
 
     /**
      * @param mixed $downvotesCount
+     *
      * @return Comment
      */
     public function setDownvotesCount($downvotesCount);
@@ -109,14 +108,28 @@ interface CommentInterface
      */
     public function getUserReference();
 
+    /**
+     * @param mixed $vote
+     *
+     * @return mixed
+     */
     public function addVote($vote);
 
+    /**
+     * @param mixed $vote
+     *
+     * @return mixed
+     */
     public function removeVote($vote);
 
+    /**
+     * @return string
+     */
     public function getSlug();
 
     /**
      * @param mixed $userReference
+     *
      * @return Comment
      */
     public function setUserReference($userReference);
@@ -128,6 +141,7 @@ interface CommentInterface
 
     /**
      * @param mixed $modelId
+     *
      * @return Comment
      */
     public function setModelId($modelId);

@@ -1,10 +1,12 @@
 <?php
+
 namespace Youshido\CommentsBundle\Document;
 
 use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
 
 /**
  * Class UserReference
+ *
  * @ODM\EmbeddedDocument()
  */
 class UserReference
@@ -20,14 +22,18 @@ class UserReference
 
     /**
      * UserReference constructor.
+     *
      * @param CommentUserInterface $user
      */
-    public function __construct($user)
+    public function __construct(CommentUserInterface $user)
     {
         $this->userId = $user->getId();
-        $this->name = (string)$user;
-        $this->avatar = new EmbeddedPath();
-        $this->avatar->setPath($user->getAvatar() ? $user->getAvatar()->getPath() : null);
+        $this->name   = (string) $user;
+
+        if ($user->getAvatar()) {
+            $this->avatar = new EmbeddedPath();
+            $this->avatar->setPath($user->getAvatar()->getPath());
+        }
     }
 
     /**
@@ -77,7 +83,4 @@ class UserReference
     {
         $this->avatar = $avatar;
     }
-
-
-
 }

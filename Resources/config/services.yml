@@ -1,24 +1,25 @@
 services:
-  comments_manager:
-    class: Youshido\CommentsBundle\Service\CommentsManager
-    arguments:
-      - "@comments.om"
-      - "@security.token_storage"
-    calls:
-      - ["setAllowAnonymous", ["%comments.config.allow_anonymous%"]]
-      - ["setMaxDepth", ["%comments.config.max_depth%"]]
-      - ["initiateCurrentUser"]
+    comments_manager:
+        class: Youshido\CommentsBundle\Service\CommentsManager
+        arguments:
+            - "@comments.om"
+            - "@security.token_storage"
+            - "@event_dispatcher"
+        calls:
+            - ["setAllowAnonymous", ["%comments.config.allow_anonymous%"]]
+            - ["setMaxDepth", ["%comments.config.max_depth%"]]
+            - ["initiateCurrentUser"]
 
-  comments_helper:
-    class: Youshido\CommentsBundle\Service\CommentsHelper
-    parent: "graphql_extensions.base_helper"
-    arguments:
-      - "@comments_manager"
-      - "%comments.config.model%"
+    comments_helper:
+        class: Youshido\CommentsBundle\Service\CommentsHelper
+        parent: "graphql_extensions.base_helper"
+        arguments:
+            - "@comments_manager"
+            - "%comments.config.model%"
 
-  voter.comment:
-    class: Youshido\CommentsBundle\Security\Voter\CommentVoter
-    public: false
-    arguments: ['@security.access.decision_manager']
-    tags:
-      - { name: security.voter }
+    voter.comment:
+        class: Youshido\CommentsBundle\Security\Voter\CommentVoter
+        public: false
+        arguments: ['@security.access.decision_manager']
+        tags:
+            - { name: security.voter }

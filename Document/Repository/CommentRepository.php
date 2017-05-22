@@ -5,8 +5,17 @@ namespace Youshido\CommentsBundle\Document\Repository;
 use Youshido\CommentsBundle\GraphQL\Type\CommentSortModeEnumType;
 use Youshido\GraphQLExtensionsBundle\Document\Repository\CursorAwareRepository;
 
+/**
+ * Class CommentRepository
+ */
 class CommentRepository extends CursorAwareRepository
 {
+    /**
+     * @param array $args
+     * @param array $filters
+     *
+     * @return array
+     */
     public function getCursoredList($args, $filters = [])
     {
         $filters['modelId'] = $args['modelId'];
@@ -27,10 +36,15 @@ class CommentRepository extends CursorAwareRepository
                     break;
             }
         }
+
         return parent::getCursoredList($args, $filters);
     }
 
-
+    /**
+     * @param array $filters
+     *
+     * @return \Doctrine\ODM\MongoDB\Query\Builder
+     */
     public function createQueryForFilters($filters)
     {
         $qb = $this->createQueryBuilder();

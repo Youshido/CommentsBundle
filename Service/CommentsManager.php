@@ -1,30 +1,25 @@
 <?php
-/**
- * This file is a part of Youshido CommentsBundle.
- *
- * @author Alexandr Viniychuk <a@viniychuk.com>
- * created: 3/15/17 7:25 PM
- */
 
 namespace Youshido\CommentsBundle\Service;
 
 use Doctrine\Common\Persistence\ObjectManager;
 use Doctrine\ODM\MongoDB\DocumentManager;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage;
 use Youshido\CommentsBundle\Document\Comment;
 use Youshido\CommentsBundle\Document\CommentableInterface;
 use Youshido\CommentsBundle\Document\CommentInterface;
 use Youshido\CommentsBundle\Document\CommentVote;
 use Youshido\CommentsBundle\Document\UserReference;
+use Youshido\CommentsBundle\Event\CreateCommentEvent;
+use Youshido\CommentsBundle\Event\DeleteCommentEvent;
 
 /**
  * Class CommentsManager
- *
- * @package Youshido\CommentsBundle\Service
  */
 class CommentsManager
 {
-    /** @var ObjectManager */
+    /** @var ObjectManager|DocumentManager */
     private $om;
 
     /** @var TokenStorage */
@@ -37,18 +32,23 @@ class CommentsManager
     private $allowAnonymous = false;
 
     /** @var int */
-    private $maxDepth = null;
+    private $maxDepth;
+
+    /** @var  EventDispatcherInterface */
+    private $eventDispatcher;
 
     /**
      * CommentsManager constructor.
      *
-     * @param ObjectManager $om
-     * @param TokenStorage  $tokenStorage
+     * @param ObjectManager            $om
+     * @param TokenStorage             $tokenStorage
+     * @param EventDispatcherInterface $eventDispatcher
      */
-    public function __construct(ObjectManager $om, TokenStorage $tokenStorage)
+    public function __construct(ObjectManager $om, TokenStorage $tokenStorage, EventDispatcherInterface $eventDispatcher)
     {
-        $this->om           = $om;
-        $this->tokenStorage = $tokenStorage;
+        $this->om              = $om;
+        $this->tokenStorage    = $tokenStorage;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**
@@ -63,9 +63,11 @@ class CommentsManager
         $comment = new Comment($content);
         $comment->setModelId(new \MongoId($object->getId()));
         $parentSlug = '';
-        if (!empty($parentId)) {
+
+        if (null !== $parentId) {
             $parent = $this->om->getRepository(Comment::class)->find($parentId);
-            if (!is_null($this->maxDepth) && $parent->getLevel() + 1 > $this->maxDepth) {
+
+            if (null !== $this->maxDepth && $parent->getLevel() + 1 > $this->maxDepth) {
                 $comment->setLevel($this->maxDepth);
                 if ($parent->getParentId()) {
                     $parent = $this->om->getRepository(Comment::class)->find($parent->getParentId());
@@ -73,17 +75,22 @@ class CommentsManager
             } else {
                 $comment->setLevel($parent->getLevel() + 1);
             }
+
             if ($parent) {
                 $comment->setParentId($parentId);
                 $parentSlug = $parent->getSlug() . '-';
             }
         }
+
         $comment->setCreatedAt(new \DateTime());
-        $comment->setSlug($parentSlug . (new \DateTime())->format("Y.m.d.H.i.s-") . uniqid());
+        $comment->setSlug($parentSlug . (new \DateTime())->format('Y.m.d.H.i.s-') . uniqid('', false));
+
         $this->processAuth($comment);
 
         $this->om->persist($comment);
-        $this->om->flush();
+        $this->om->flush($comment);
+
+        $this->eventDispatcher->dispatch('comments_bundle.comment.create', new CreateCommentEvent($comment));
 
         return $comment;
     }
@@ -95,7 +102,7 @@ class CommentsManager
     public function getCurrentUser()
     {
         if (!$this->allowAnonymous && !$this->currentUser) {
-            throw new \Exception('Anonymous comments are not allowed');
+            throw new \LogicException('Anonymous comments are not allowed');
         }
 
         return $this->currentUser;
@@ -124,12 +131,14 @@ class CommentsManager
         $vote = new CommentVote();
         $vote->setUserId($this->getCurrentUser()->getId());
         $vote->setValue($value);
+
         $comment->addVote($vote);
         if ($value > 0) {
             $comment->setUpvotesCount($comment->getUpvotesCount() + $value);
         } else {
             $comment->setDownvotesCount($comment->getDownvotesCount() + abs($value));
         }
+
         $this->om->flush();
 
         return $comment->getUpvotesCount() + $comment->getDownvotesCount();
@@ -145,26 +154,34 @@ class CommentsManager
         if (!$this->currentUser) {
             return null;
         }
+
         $user = $this->getCurrentUser();
-        /** @var DocumentManager $om */
-        $om   = $this->om;
-        $vote = $om->getRepository(Comment::class)->findOneBy([
-            '_id'          => new \MongoId($comment->getId()),
-            'votes.userId' => new \MongoId($user->getId()),
+        $vote = $this->om->getRepository(Comment::class)->findOneBy([
+            '_id'            => new \MongoId($comment->getId()),
+            'votes . userId' => new \MongoId($user->getId()),
         ]);
 
         return !empty($vote);
     }
 
+    /**
+     * @param CommentInterface $comment
+     *
+     * @return CommentInterface
+     */
     public function removeVote(CommentInterface $comment)
     {
         $user      = $this->getCurrentUser();
         $commentId = new \MongoId($comment->getId());
 
-        $vote = $this->getOm()->getDocumentCollection(Comment::class)->findOne([
-            '_id'          => $commentId,
-            'votes.userId' => new \MongoId($user->getId()),
-        ], ['votes.$']);
+        $vote = $this->getOm()->getDocumentCollection(Comment::class)->findOne(
+            [
+                '_id'            => $commentId,
+                'votes . userId' => new \MongoId($user->getId()),
+            ],
+            ['votes . $']
+        );
+
         if ($vote) {
             $result = $this->getOm()->getDocumentCollection(Comment::class)->update(
                 [
@@ -174,21 +191,22 @@ class CommentsManager
                     '$pull' => ['votes' => ['userId' => new \MongoId($user->getId())]],
                 ]
             );
+
             if ($result['nModified']) {
-                if (($vote['votes'][0]['value'] > 0)) {
+                if ($vote['votes'][0]['value'] > 0) {
                     $field = 'upvotesCount';
                     $comment->setUpvotesCount($comment->getUpvotesCount() - 1);
                 } else {
                     $field = 'downvotesCount';
                     $comment->setDownvotesCount($comment->getDownvotesCount() - 1);
                 }
+
                 $this->getOm()->getDocumentCollection(Comment::class)->update(
-                    ['_id' => $commentId,],
+                    ['_id' => $commentId],
                     ['$inc' => [$field => -1]]
                 );
             }
         }
-
 
         return $comment;
     }
@@ -218,11 +236,17 @@ class CommentsManager
      */
     public function deleteComment($comment)
     {
-        /** @var DocumentManager $om */
-        $om = $this->om;
-        $om->getDocumentCollection(Comment::class)->createQueryBuilder()->remove()
-            ->field('slug')->equals(new \MongoRegex('/^' . $comment->getSlug() . '/'))
-            ->getQuery()->execute();
+        /** @var Comment[] $comments */
+        $comments = $this->om
+            ->getRepository(Comment::class)
+            ->findBy(['slug' => new \MongoRegex('/^' . $comment->getSlug() . '/')]);
+
+        foreach ($comments as $item) {
+            $this->om->remove($item);
+
+            $this->om->flush($item);
+            $this->eventDispatcher->dispatch('comments_bundle.comment.delete', new DeleteCommentEvent($item));
+        }
     }
 
     /**
@@ -230,10 +254,8 @@ class CommentsManager
      */
     public function initiateCurrentUser()
     {
-        if ($token = $this->tokenStorage->getToken()) {
-            if (($user = $token->getUser()) && is_object($user)) {
-                $this->currentUser = $user;
-            }
+        if (($token = $this->tokenStorage->getToken()) && ($user = $token->getUser()) && is_object($user)) {
+            $this->currentUser = $user;
         }
     }
 
@@ -257,10 +279,12 @@ class CommentsManager
         /** @var DocumentManager $om */
         $om = $this->om;
 
-        return $om->getRepository(Comment::class)->createQueryBuilder()
+        return $om->getRepository(Comment::class)
+            ->createQueryBuilder()
             ->field('modelId')->equals(new \MongoId($object->getId()))
             ->sort('slug')
-            ->getQuery()->execute();
+            ->getQuery()
+            ->execute();
     }
 
     /**
@@ -307,6 +331,7 @@ class CommentsManager
     {
         $user          = $this->getCurrentUser();
         $userReference = new UserReference($user);
+
         $comment->setUserReference($userReference);
     }
 }

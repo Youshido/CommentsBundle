@@ -5,15 +5,13 @@ namespace Youshido\CommentsBundle\Document;
 use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
 use Youshido\GraphQLExtensionsBundle\Model\PathAwareInterface;
 
-
 /**
  * Class EmbeddedPath
- * @package Youshido\CommentsBundle\Document
+ *
  * @ODM\EmbeddedDocument()
  */
 class EmbeddedPath implements PathAwareInterface
 {
-
     /** @ODM\Id() */
     private $id;
 
@@ -36,8 +34,6 @@ class EmbeddedPath implements PathAwareInterface
         $this->id = $id;
     }
 
-
-
     /**
      * @return mixed
      */
@@ -53,5 +49,4 @@ class EmbeddedPath implements PathAwareInterface
     {
         $this->path = $path;
     }
-
 }

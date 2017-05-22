@@ -12,24 +12,40 @@ use Youshido\GraphQL\Type\NonNullType;
 use Youshido\GraphQL\Type\Scalar\IdType;
 use Youshido\GraphQLExtension\Type\CursorResultType;
 
+/**
+ * Class CommentsField
+ */
 class CommentsField extends AbstractField
 {
+    /**
+     * @return CursorResultType
+     */
     public function getType()
     {
         return new CursorResultType(new CommentType());
     }
 
+    /**
+     * @param FieldConfig $config
+     */
     public function build(FieldConfig $config)
     {
         $config->addArguments(array_merge(Connection::connectionArgs(), [
             'modelId'  => new NonNullType(new IdType()),
             'sortMode' => [
                 'type'         => new CommentSortModeEnumType(),
-                'defaultValue' => CommentSortModeEnumType::COMMENT_SORT_TYPE_NEWEST
+                'defaultValue' => CommentSortModeEnumType::COMMENT_SORT_TYPE_NEWEST,
             ],
         ]));
     }
 
+    /**
+     * @param mixed       $value
+     * @param array       $args
+     * @param ResolveInfo $info
+     *
+     * @return \Youshido\CommentsBundle\Document\CommentInterface[]
+     */
     public function resolve($value, array $args, ResolveInfo $info)
     {
         return $info->getContainer()->get('comments_helper')->getComments($args);

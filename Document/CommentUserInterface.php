@@ -1,20 +1,19 @@
 <?php
-/**
- * This file is a part of Youshido CommentsBundle.
- *
- * @author Alexandr Viniychuk <a@viniychuk.com>
- * created: 4/27/17 7:50 PM
- */
 
 namespace Youshido\CommentsBundle\Document;
 
-
+/**
+ * Interface CommentUserInterface
+ */
 interface CommentUserInterface
 {
-
+    /**
+     * @return string
+     */
     public function getId();
 
-    /** @return EmbeddedPath */
+    /**
+     * @return EmbeddedPath
+     */
     public function getAvatar();
-
 }

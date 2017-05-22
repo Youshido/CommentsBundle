@@ -2,13 +2,17 @@
 
 namespace Youshido\CommentsBundle\GraphQL\Type;
 
-
 use Youshido\CommentsBundle\Document\CommentStatus;
 use Youshido\GraphQL\Type\Enum\AbstractEnumType;
 
+/**
+ * Class CommentStatusEnumType
+ */
 class CommentStatusEnumType extends AbstractEnumType
 {
-
+    /**
+     * @return array
+     */
     public function getValues()
     {
         return [
@@ -31,7 +35,7 @@ class CommentStatusEnumType extends AbstractEnumType
             [
                 'name'  => 'SPAM',
                 'value' => CommentStatus::SPAM,
-            ]
+            ],
         ];
     }
 }

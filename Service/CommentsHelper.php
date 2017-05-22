@@ -2,10 +2,10 @@
 
 namespace Youshido\CommentsBundle\Service;
 
-use Youshido\CommentsBundle\Document\CommentableInterface;
-use Youshido\CommentsBundle\Security\Voter\CommentVoter;
 use Youshido\CommentsBundle\Document\Comment;
+use Youshido\CommentsBundle\Document\CommentableInterface;
 use Youshido\CommentsBundle\Document\CommentInterface;
+use Youshido\CommentsBundle\Security\Voter\CommentVoter;
 use Youshido\GraphQLExtensionsBundle\Helper\BaseHelper;
 
 /**
@@ -18,6 +18,7 @@ class CommentsHelper extends BaseHelper
     /** @var  CommentsManager */
     private $commentsManager;
 
+    /** @var string string */
     private $modelClass;
 
     /**
@@ -42,7 +43,7 @@ class CommentsHelper extends BaseHelper
     {
         $object = $this->getObject($this->modelClass, $args['modelId']);
 
-        if (is_null($object)) {
+        if (null === $object) {
             throw $this->createNotFoundException('Object not found');
         }
 
@@ -60,7 +61,7 @@ class CommentsHelper extends BaseHelper
         /** @var CommentableInterface $object */
         $object = $this->getObject($this->modelClass, $args['modelId']);
 
-        if (is_null($object)) {
+        if (null === $object) {
             throw $this->createNotFoundException('Object not found');
         }
 
@@ -70,12 +71,12 @@ class CommentsHelper extends BaseHelper
                 'modelId' => new \MongoId($args['modelId']),
             ]);
 
-            if (is_null($parentComment)) {
+            if (null === $parentComment) {
                 throw $this->createInvalidParamsException('This object doesn\'t have comment with id ' . $args['parentId']);
             }
         }
 
-        return $this->commentsManager->createComment($object, $args['content'], ($args['parentId'] ?? null));
+        return $this->commentsManager->createComment($object, $args['content'], $args['parentId'] ?? null);
     }
 
     /**
@@ -142,17 +143,5 @@ class CommentsHelper extends BaseHelper
         $this->commentsManager->deleteComment($comment);
 
         return $comment->getSlug();
-    }
-
-    /**
-     * @param      $class
-     * @param      $id
-     * @param null $attribute
-     *
-     * @return Comment
-     */
-    protected function getObject($class, $id, $attribute = null)
-    {
-        return parent::getObject($class, $id, $attribute);
     }
 }

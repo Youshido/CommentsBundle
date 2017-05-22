@@ -2,7 +2,9 @@
 
 namespace Youshido\CommentsBundle\Document;
 
-
+/**
+ * Class CommentStatus
+ */
 class CommentStatus
 {
     const ACTIVE  = 1;
