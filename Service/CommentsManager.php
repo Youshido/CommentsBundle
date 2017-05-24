@@ -63,8 +63,10 @@ class CommentsManager
         $comment = new Comment($content);
         $comment->setModelId(new \MongoId($object->getId()));
         $parentSlug = '';
+        $parent     = null;
 
         if (null !== $parentId) {
+            /** @var Comment $parent */
             $parent = $this->om->getRepository(Comment::class)->find($parentId);
 
             if (null !== $this->maxDepth && $parent->getLevel() + 1 > $this->maxDepth) {
@@ -77,7 +79,10 @@ class CommentsManager
             }
 
             if ($parent) {
-                $comment->setParentId($parentId);
+                $parent->setRepliesCount($parent->getRepliesCount() + 1);
+                $parent->setPopularRating($parent->getPopularRating() + 1);
+
+                $comment->setParentId($parent->getId());
                 $parentSlug = $parent->getSlug() . '-';
             }
         }
@@ -89,6 +94,10 @@ class CommentsManager
 
         $this->om->persist($comment);
         $this->om->flush($comment);
+
+        if ($parent) {
+            $this->om->flush($parent);
+        }
 
         $this->eventDispatcher->dispatch('comments_bundle.comment.create', new CreateCommentEvent($comment));
 
@@ -138,6 +147,8 @@ class CommentsManager
         } else {
             $comment->setDownvotesCount($comment->getDownvotesCount() + abs($value));
         }
+
+        $comment->setPopularRating($comment->getPopularRating() + $value);
 
         $this->om->flush();
 
@@ -196,9 +207,11 @@ class CommentsManager
                 if ($vote['votes'][0]['value'] > 0) {
                     $field = 'upvotesCount';
                     $comment->setUpvotesCount($comment->getUpvotesCount() - 1);
+                    $comment->setPopularRating($comment->getPopularRating() - 1);
                 } else {
                     $field = 'downvotesCount';
                     $comment->setDownvotesCount($comment->getDownvotesCount() - 1);
+                    $comment->setPopularRating($comment->getPopularRating() + 1);
                 }
 
                 $this->getOm()->getDocumentCollection(Comment::class)->update(
@@ -236,6 +249,18 @@ class CommentsManager
      */
     public function deleteComment($comment)
     {
+        if ($comment->getParentId()) {
+            /** @var Comment $parent */
+            $parent = $this->om->getRepository(Comment::class)->find($comment->getParentId());
+
+            if ($parent) {
+                $parent->setRepliesCount(max(0, $parent->getRepliesCount() - 1));
+                $parent->setPopularRating(max(0, $parent->getPopularRating() - 1));
+
+                $this->om->flush($parent);
+            }
+        }
+
         /** @var Comment[] $comments */
         $comments = $this->om
             ->getRepository(Comment::class)

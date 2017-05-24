@@ -27,7 +27,7 @@ class CommentRepository extends CursorAwareRepository
 
             switch ($args['sortBy']) {
                 case CommentsSortByType::POPULARITY:
-                    $field = 'upvotesCount';
+                    $field = 'popularRating';
 
                     break;
 
@@ -38,6 +38,16 @@ class CommentRepository extends CursorAwareRepository
 
                 case CommentsSortByType::DATE:
                     $field = 'createdAt';
+
+                    break;
+
+                case CommentsSortByType::VOTES:
+                    $field = 'upvotesCount';
+
+                    break;
+
+                case CommentsSortByType::REPLIES:
+                    $field = 'repliesCount';
 
                     break;
 

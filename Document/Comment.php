@@ -48,6 +48,12 @@ class Comment implements CommentInterface
     /** @ODM\Field() */
     private $slug;
 
+    /** @ODM\Field(type="int") */
+    private $repliesCount = 0;
+
+    /** @ODM\Field(type="int") */
+    private $popularRating = 0;
+
     /**
      * Comment constructor.
      *
@@ -180,8 +186,6 @@ class Comment implements CommentInterface
     }
 
     /**
-     * Add vote
-     *
      * @param CommentVote $vote
      */
     public function addVote($vote)
@@ -190,8 +194,6 @@ class Comment implements CommentInterface
     }
 
     /**
-     * Remove vote
-     *
      * @param CommentVote $vote
      */
     public function removeVote($vote)
@@ -258,7 +260,7 @@ class Comment implements CommentInterface
     /**
      * @return int
      */
-    public function getLevel(): int
+    public function getLevel()
     {
         return $this->level;
     }
@@ -266,13 +268,13 @@ class Comment implements CommentInterface
     /**
      * @param int $level
      */
-    public function setLevel(int $level)
+    public function setLevel($level)
     {
         $this->level = $level;
     }
 
     /**
-     * @return mixed
+     * @return UserReference
      */
     public function getUserReference()
     {
@@ -280,7 +282,7 @@ class Comment implements CommentInterface
     }
 
     /**
-     * @param mixed $userReference
+     * @param UserReference $userReference
      *
      * @return Comment
      */
@@ -292,7 +294,7 @@ class Comment implements CommentInterface
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getModelId()
     {
@@ -300,7 +302,7 @@ class Comment implements CommentInterface
     }
 
     /**
-     * @param mixed $modelId
+     * @param string $modelId
      *
      * @return Comment
      */
@@ -317,5 +319,45 @@ class Comment implements CommentInterface
     public function getAuthor()
     {
         return $this->userReference;
+    }
+
+    /**
+     * @return int
+     */
+    public function getRepliesCount()
+    {
+        return $this->repliesCount;
+    }
+
+    /**
+     * @param int $repliesCount
+     *
+     * @return Comment
+     */
+    public function setRepliesCount($repliesCount)
+    {
+        $this->repliesCount = $repliesCount;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getPopularRating()
+    {
+        return $this->popularRating;
+    }
+
+    /**
+     * @param mixed $popularRating
+     *
+     * @return Comment
+     */
+    public function setPopularRating($popularRating)
+    {
+        $this->popularRating = $popularRating;
+
+        return $this;
     }
 }

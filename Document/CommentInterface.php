@@ -15,7 +15,7 @@ interface CommentInterface
     /**
      * @param mixed $id
      *
-     * @return Comment
+     * @return CommentInterface
      */
     public function setId($id);
 
@@ -27,7 +27,7 @@ interface CommentInterface
     /**
      * @param mixed $content
      *
-     * @return Comment
+     * @return CommentInterface
      */
     public function setContent($content);
 
@@ -39,7 +39,7 @@ interface CommentInterface
     /**
      * @param mixed $parentId
      *
-     * @return Comment
+     * @return CommentInterface
      */
     public function setParentId($parentId);
 
@@ -51,7 +51,7 @@ interface CommentInterface
     /**
      * @param mixed $createdAt
      *
-     * @return Comment
+     * @return CommentInterface
      */
     public function setCreatedAt($createdAt);
 
@@ -63,7 +63,7 @@ interface CommentInterface
     /**
      * @param mixed $status
      *
-     * @return Comment
+     * @return CommentInterface
      */
     public function setStatus($status);
 
@@ -75,7 +75,7 @@ interface CommentInterface
     /**
      * @param mixed $votes
      *
-     * @return Comment
+     * @return CommentInterface
      */
     public function setVotes($votes);
 
@@ -87,7 +87,7 @@ interface CommentInterface
     /**
      * @param mixed $upvotesCount
      *
-     * @return Comment
+     * @return CommentInterface
      */
     public function setUpvotesCount($upvotesCount);
 
@@ -99,7 +99,7 @@ interface CommentInterface
     /**
      * @param mixed $downvotesCount
      *
-     * @return Comment
+     * @return CommentInterface
      */
     public function setDownvotesCount($downvotesCount);
 
@@ -130,7 +130,7 @@ interface CommentInterface
     /**
      * @param mixed $userReference
      *
-     * @return Comment
+     * @return CommentInterface
      */
     public function setUserReference($userReference);
 
@@ -142,7 +142,31 @@ interface CommentInterface
     /**
      * @param mixed $modelId
      *
-     * @return Comment
+     * @return CommentInterface
      */
     public function setModelId($modelId);
+
+    /**
+     * @return int
+     */
+    public function getPopularRating();
+
+    /**
+     * @param int $popularRating
+     *
+     * @return CommentInterface
+     */
+    public function setPopularRating($popularRating);
+
+    /**
+     * @return int
+     */
+    public function getRepliesCount();
+
+    /**
+     * @param int $repliesCount
+     *
+     * @return CommentInterface
+     */
+    public function setRepliesCount($repliesCount);
 }
