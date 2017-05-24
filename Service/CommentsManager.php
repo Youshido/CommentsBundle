@@ -157,8 +157,8 @@ class CommentsManager
 
         $user = $this->getCurrentUser();
         $vote = $this->om->getRepository(Comment::class)->findOneBy([
-            '_id'            => new \MongoId($comment->getId()),
-            'votes . userId' => new \MongoId($user->getId()),
+            '_id'          => new \MongoId($comment->getId()),
+            'votes.userId' => new \MongoId($user->getId()),
         ]);
 
         return !empty($vote);

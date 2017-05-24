@@ -2,7 +2,8 @@
 
 namespace Youshido\CommentsBundle\Document\Repository;
 
-use Youshido\CommentsBundle\GraphQL\Type\CommentSortModeEnumType;
+use Youshido\CommentsBundle\GraphQL\Type\CommentsSortByType;
+use Youshido\CommentsBundle\GraphQL\Type\CommentsSortOrderType;
 use Youshido\GraphQLExtensionsBundle\Document\Repository\CursorAwareRepository;
 
 /**
@@ -18,23 +19,33 @@ class CommentRepository extends CursorAwareRepository
      */
     public function getCursoredList($args, $filters = [])
     {
-        $filters['modelId'] = $args['modelId'];
-        if (!empty($args['sortMode'])) {
-            switch ($args['sortMode']) {
-                case CommentSortModeEnumType::COMMENT_SORT_TYPE_BEST:
-                    $args['sort'] = [
-                        'field' => 'upvotesCount',
-                        'order' => 1,
-                    ];
+        $filters['modelId']  = $args['modelId'];
+        $filters['parentId'] = $args['parentId'] ?? null;
+
+        if (!empty($args['sortBy'])) {
+            $order = $args['sortOrder'] === CommentsSortOrderType::DESC ? -1 : 1;
+
+            switch ($args['sortBy']) {
+                case CommentsSortByType::POPULARITY:
+                    $field = 'upvotesCount';
+
                     break;
 
-                case CommentSortModeEnumType::COMMENT_SORT_TYPE_NEWEST:
-                    $args['sort'] = [
-                        'field' => 'slug',
-                        'order' => 1,
-                    ];
+                case CommentsSortByType::SLUG:
+                    $field = 'slug';
+
                     break;
+
+                case CommentsSortByType::DATE:
+                    $field = 'createdAt';
+
+                    break;
+
+                default:
+                    throw new \InvalidArgumentException(sprintf('Not supported sortOrder "%s"', $args['sortOrder']));
             }
+
+            $args['sort'] = ['field' => $field, 'order' => $order];
         }
 
         return parent::getCursoredList($args, $filters);
@@ -51,6 +62,10 @@ class CommentRepository extends CursorAwareRepository
 
         if (!empty($filters['modelId'])) {
             $qb->addAnd(['modelId' => new \MongoId($filters['modelId'])]);
+        }
+
+        if (!empty($filters['parentId'])) {
+            $qb->addAnd(['parentId' => new \MongoId($filters['parentId'])]);
         }
 
         $qb->sort('slug', 'ASC');

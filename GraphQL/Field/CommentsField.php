@@ -2,7 +2,8 @@
 
 namespace Youshido\CommentsBundle\GraphQL\Field;
 
-use Youshido\CommentsBundle\GraphQL\Type\CommentSortModeEnumType;
+use Youshido\CommentsBundle\GraphQL\Type\CommentsSortByType;
+use Youshido\CommentsBundle\GraphQL\Type\CommentsSortOrderType;
 use Youshido\CommentsBundle\GraphQL\Type\CommentType;
 use Youshido\GraphQL\Config\Field\FieldConfig;
 use Youshido\GraphQL\Execution\ResolveInfo;
@@ -31,10 +32,15 @@ class CommentsField extends AbstractField
     public function build(FieldConfig $config)
     {
         $config->addArguments(array_merge(Connection::connectionArgs(), [
-            'modelId'  => new NonNullType(new IdType()),
-            'sortMode' => [
-                'type'         => new CommentSortModeEnumType(),
-                'defaultValue' => CommentSortModeEnumType::COMMENT_SORT_TYPE_NEWEST,
+            'modelId'   => new NonNullType(new IdType()),
+            'parentId'  => new IdType(),
+            'sortBy'    => [
+                'type'    => new CommentsSortByType(),
+                'defaultValue' => CommentsSortByType::DATE,
+            ],
+            'sortOrder' => [
+                'type'    => new CommentsSortOrderType(),
+                'defaultValue' => CommentsSortOrderType::ASC,
             ],
         ]));
     }
