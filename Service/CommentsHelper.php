@@ -144,4 +144,24 @@ class CommentsHelper extends BaseHelper
 
         return $comment->getSlug();
     }
+
+    /**
+     * @return string
+     */
+    public function getModelClass()
+    {
+        return $this->modelClass;
+    }
+
+    /**
+     * @param string $modelClass
+     *
+     * @return CommentsHelper
+     */
+    public function setModelClass($modelClass)
+    {
+        $this->modelClass = $modelClass;
+
+        return $this;
+    }
 }
