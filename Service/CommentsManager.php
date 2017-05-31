@@ -188,9 +188,9 @@ class CommentsManager
         $vote = $this->getOm()->getDocumentCollection(Comment::class)->findOne(
             [
                 '_id'            => $commentId,
-                'votes . userId' => new \MongoId($user->getId()),
+                'votes.userId' => new \MongoId($user->getId()),
             ],
-            ['votes . $']
+            ['votes.$']
         );
 
         if ($vote) {
